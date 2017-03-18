@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<article>
+    <header>
+        <h1>&ndash; Айкрафт &ndash;</h1>
+    </header>
+
+    <div class="block">
+        <h3>Чеки из Джестори</h3>
+        <div class="dropzone-container">
+            <form action="/handle-checks" id="dropzone-checks" class="dropzone"></form>
+        </div>
+    </div>
+</article>
+
+<script>
+Dropzone.options.dropzoneChecks = {
+    dictDefaultMessage: 'Выберите текстовые файлы',
+    init: function() {
+        this.on('success', function(file, serverResponse) {
+            var excelLink = document.createElement('a');
+            excelLink.href = serverResponse.fileLink;
+            excelLink.target = '_blank';
+            excelLink.style.cursor = 'pointer';
+            excelLink.appendChild(document.createTextNode('Excel ↓'));
+
+            var excelLinkContainer = document.createElement('div');
+            excelLinkContainer.style.textAlign = 'center';
+            excelLinkContainer.appendChild(excelLink);
+
+            file.previewTemplate.appendChild(excelLinkContainer);
+        });
+    }
+};
+</script>
+{% endblock %}
