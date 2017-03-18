@@ -101,12 +101,16 @@ $app->post('/handle-checks', function(Request $request) use($app) {
     $columnNum = 'A';
 
     $formatLikeSumColumns = array();
+    $formatLikeDateColumns = array();
 
     foreach($headerNames as $name) {
         $excelList->setCellValue($columnNum . $rowNum, $name);
 
         if(preg_match('/сумма/iu', $name)) {
             $formatLikeSumColumns[] = $columnNum;
+        }
+        elseif(preg_match('/дата/iu', $name)) {
+            $formatLikeDateColumns[] = $columnNum;
         }
 
         $columnNum++;
@@ -122,8 +126,24 @@ $app->post('/handle-checks', function(Request $request) use($app) {
                 $type = PHPExcel_Cell_DataType::TYPE_NUMERIC;
                 $rowColumn = (float) $rowColumn;
             }
+            elseif(in_array($columnNum, $formatLikeDateColumns)) {
+                $type = PHPExcel_Cell_DataType::TYPE_NUMERIC;
+                $date = \DateTime::createFromFormat('!d/m/Y', $rowColumn);
+                if($date) {
+                    $rowColumn = PHPExcel_Shared_Date::PHPToExcel(
+                        $date->format('U')
+                    );
+                }
+            }
 
             $excelList->setCellValueExplicit($columnNum . $rowNum, $rowColumn, $type);
+
+            if(in_array($columnNum, $formatLikeDateColumns)) {
+                $excelList->getStyle($columnNum . $rowNum)
+                    ->getNumberFormat()
+                    ->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_DATE_DDMMYYYY);
+            }
+
             $columnNum++;
         }
         $rowNum++;
