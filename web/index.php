@@ -100,8 +100,15 @@ $app->post('/handle-checks', function(Request $request) use($app) {
     $rowNum = 1;
     $columnNum = 'A';
 
+    $formatLikeSumColumns = array();
+
     foreach($headerNames as $name) {
         $excelList->setCellValue($columnNum . $rowNum, $name);
+
+        if(preg_match('/сумма/iu', $name)) {
+            $formatLikeSumColumns[] = $columnNum;
+        }
+
         $columnNum++;
     }
 
@@ -110,7 +117,13 @@ $app->post('/handle-checks', function(Request $request) use($app) {
     foreach($rows as $row) {
         $columnNum = 'A';
         foreach($row as $rowColumn) {
-            $excelList->setCellValueExplicit($columnNum . $rowNum, $rowColumn);
+            $type = PHPExcel_Cell_DataType::TYPE_STRING;
+            if(in_array($columnNum, $formatLikeSumColumns)) {
+                $type = PHPExcel_Cell_DataType::TYPE_NUMERIC;
+                $rowColumn = (float) $rowColumn;
+            }
+
+            $excelList->setCellValueExplicit($columnNum . $rowNum, $rowColumn, $type);
             $columnNum++;
         }
         $rowNum++;
