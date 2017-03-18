@@ -37,7 +37,7 @@ $app->post('/handle-checks', function(Request $request) use($app) {
     $headerRowKey = null;
     foreach($data as $key=>$row) {
         if(preg_match('/-- -/', $row)) {
-            $headerRow = $row;
+            $headerRow = str_replace(array(chr(10), chr(13)), '', $row);
             $headerRowKey = $key;
             break;
         }
@@ -54,6 +54,8 @@ $app->post('/handle-checks', function(Request $request) use($app) {
                 return $char === ' ';
             })
         );
+
+    $headerSpaces[] = strlen($headerRow);
 
     $columns = array();
     $prev = 0;
